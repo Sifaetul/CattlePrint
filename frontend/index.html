@@ -1,70 +1,131 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CattlePrint - AI Bovine Biometric Identification System</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#020617" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>CattlePrint - AI Bovine Biometric System</title>
+  
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              400: '#34d399',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Modern Typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
   <style>
-    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .font-mono-num {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    
+    /* Biometric Laser Scanner Animation */
     .scanner-laser {
-      background: linear-gradient(180deg, rgba(34, 197, 94, 0) 0%, rgba(34, 197, 94, 0.8) 50%, rgba(34, 197, 94, 0) 100%);
-      animation: scan 2s infinite ease-in-out;
+      background: linear-gradient(180deg, rgba(16, 185, 129, 0) 0%, rgba(16, 185, 129, 0.85) 50%, rgba(16, 185, 129, 0) 100%);
+      animation: scanLaser 2.2s infinite ease-in-out;
     }
-    @keyframes scan {
-      0% { top: 5%; opacity: 0.3; }
-      50% { top: 85%; opacity: 1; }
-      100% { top: 5%; opacity: 0.3; }
+    @keyframes scanLaser {
+      0% { top: 6%; opacity: 0.2; }
+      50% { top: 88%; opacity: 1; }
+      100% { top: 6%; opacity: 0.2; }
     }
-    .muzzle-guide-frame {
-      border: 3px dashed rgba(34, 197, 94, 0.85);
-      border-radius: 28px;
-      box-shadow: 0 0 25px rgba(34, 197, 94, 0.25);
+
+    /* Muzzle Biometric Frame Corners */
+    .corner-bracket {
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      border-color: #34d399;
+      pointer-events: none;
+    }
+    .corner-tl { top: 0; left: 0; border-top-width: 3px; border-left-width: 3px; border-top-left-radius: 12px; }
+    .corner-tr { top: 0; right: 0; border-top-width: 3px; border-right-width: 3px; border-top-right-radius: 12px; }
+    .corner-bl { bottom: 0; left: 0; border-bottom-width: 3px; border-left-width: 3px; border-bottom-left-radius: 12px; }
+    .corner-br { bottom: 0; right: 0; border-bottom-width: 3px; border-right-width: 3px; border-bottom-right-radius: 12px; }
+
+    /* Touch micro-interaction */
+    .touch-btn {
+      transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.15s ease;
+    }
+    .touch-btn:active {
+      transform: scale(0.96);
+    }
+
+    /* Safe area padding for mobile bottom bar */
+    .pb-safe {
+      padding-bottom: calc(env(safe-area-inset-bottom, 16px) + 72px);
     }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen antialiased flex flex-col">
+<body class="bg-slate-950 text-slate-100 min-h-screen antialiased flex flex-col selection:bg-emerald-500 selection:text-white pb-safe md:pb-6">
 
-  <!-- Top Navigation -->
-  <header class="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-      <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-          <i data-lucide="scan-face" class="w-6 h-6 text-white"></i>
+  <!-- ================= TOP APP BAR ================= -->
+  <header class="border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-xl sticky top-0 z-40 transition-all">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
+      <!-- Brand Logo -->
+      <div class="flex items-center space-x-2.5">
+        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-emerald-400 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+          <i data-lucide="scan" class="w-5 h-5 text-white"></i>
         </div>
         <div>
-          <span class="text-xl font-bold tracking-tight bg-gradient-to-r from-emerald-400 via-teal-300 to-sky-300 bg-clip-text text-transparent">CattlePrint</span>
-          <span class="ml-2 text-xs uppercase px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20">AI Biometrics</span>
+          <div class="flex items-center space-x-1.5">
+            <span class="text-lg sm:text-xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-400 via-teal-300 to-sky-300 bg-clip-text text-transparent">CattlePrint</span>
+            <span class="hidden sm:inline-block text-[10px] uppercase px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-bold border border-emerald-500/20">AI v1.0</span>
+          </div>
+          <p class="text-[10px] text-slate-400 sm:hidden">Bovine Muzzle Biometrics</p>
         </div>
       </div>
-      
-      <!-- Nav Tabs & Offline Sync Indicator -->
-      <div class="flex items-center space-x-2 sm:space-x-4">
-        <!-- Offline Status Pill -->
-        <div id="offline-status-pill" class="hidden items-center space-x-2 px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300">
+
+      <!-- Header Controls: Offline Sync Pill & Desktop Nav -->
+      <div class="flex items-center space-x-2 sm:space-x-3">
+        <!-- Live Offline / Sync Pill -->
+        <div id="offline-status-pill" class="hidden items-center space-x-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-[11px] font-semibold text-amber-300">
           <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
           <span id="offline-pill-text">Offline</span>
-          <button id="btn-sync-offline" onclick="syncOfflineQueue()" class="ml-1 px-2 py-0.5 rounded bg-amber-500/20 hover:bg-amber-500/40 text-[11px] font-bold text-amber-200 transition">
+          <button id="btn-sync-offline" onclick="syncOfflineQueue()" class="ml-1 px-2 py-0.5 rounded bg-amber-500/20 hover:bg-amber-500/40 text-[10px] font-bold text-amber-200 transition">
             Sync (<span id="offline-queue-count">0</span>)
           </button>
         </div>
 
-        <nav class="flex space-x-1 sm:space-x-2 bg-slate-800/60 p-1 rounded-xl border border-slate-700/60">
-          <button id="tab-identify" onclick="switchTab('identify')" class="px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all bg-emerald-600 text-white shadow-sm flex items-center space-x-1.5">
+        <!-- Desktop Navigation Tabs (Hidden on Mobile) -->
+        <nav class="hidden md:flex space-x-1 bg-slate-900/90 p-1 rounded-xl border border-slate-800">
+          <button id="desk-tab-identify" onclick="switchTab('identify')" class="px-4 py-1.5 rounded-lg text-sm font-semibold transition-all bg-emerald-600 text-white shadow-sm flex items-center space-x-2">
             <i data-lucide="scan" class="w-4 h-4"></i>
             <span>1:N Scan</span>
           </button>
-          <button id="tab-register" onclick="switchTab('register')" class="px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all text-slate-300 hover:text-white flex items-center space-x-1.5">
+          <button id="desk-tab-register" onclick="switchTab('register')" class="px-4 py-1.5 rounded-lg text-sm font-semibold transition-all text-slate-300 hover:text-white flex items-center space-x-2">
             <i data-lucide="plus-circle" class="w-4 h-4"></i>
-            <span>Register Cattle</span>
+            <span>Enroll Cattle</span>
           </button>
-          <button id="tab-directory" onclick="switchTab('directory')" class="px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all text-slate-300 hover:text-white flex items-center space-x-1.5">
+          <button id="desk-tab-directory" onclick="switchTab('directory')" class="px-4 py-1.5 rounded-lg text-sm font-semibold transition-all text-slate-300 hover:text-white flex items-center space-x-2">
             <i data-lucide="database" class="w-4 h-4"></i>
             <span>Registry</span>
           </button>
@@ -73,78 +134,113 @@
     </div>
   </header>
 
-  <!-- Main Content Container -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+  <!-- ================= MAIN CONTAINER ================= -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
 
-    <!-- ================= SECTION 1: 1:N BIOMETRIC IDENTIFICATION ================= -->
-    <div id="view-identify" class="space-y-6">
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-slate-800">
+    <!-- ================= VIEW 1: 1:N SCANNER ================= -->
+    <div id="view-identify" class="space-y-4 sm:space-y-6">
+      
+      <!-- Mobile Hero Bar -->
+      <div class="flex items-center justify-between pb-2 border-b border-slate-800/80">
         <div>
-          <h1 class="text-2xl font-bold text-slate-100 flex items-center gap-2">
-            <span>Bovine Muzzle Biometric Scanner</span>
+          <h1 class="text-lg sm:text-2xl font-extrabold text-slate-100 flex items-center gap-2">
+            <span>Biometric Scanner</span>
           </h1>
-          <p class="text-sm text-slate-400 mt-1">Capture or upload cattle muzzle photograph for 1:N open-set recognition.</p>
+          <p class="text-xs sm:text-sm text-slate-400">Position cattle nose inside box for 1:N identification.</p>
         </div>
-        <div class="flex items-center gap-3">
-          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            ArcFace Engine Online (τ = 0.72)
+        <div class="flex items-center">
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            ArcFace 512D
           </span>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <!-- Camera & Input Pane -->
-        <div class="lg:col-span-7 space-y-4">
-          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl relative overflow-hidden">
-            <!-- Camera Viewfinder -->
-            <div class="relative w-full aspect-square sm:aspect-[4/3] bg-black rounded-xl overflow-hidden border border-slate-800 flex items-center justify-center">
+      <!-- Main Layout: Grid on Desktop, Single Column on Mobile -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
+        
+        <!-- Camera Viewfinder & Controls Pane -->
+        <div class="lg:col-span-7 space-y-3 sm:space-y-4">
+          <div class="bg-slate-900/90 border border-slate-800/80 rounded-2xl sm:rounded-3xl p-3 sm:p-5 shadow-2xl relative overflow-hidden backdrop-blur-sm">
+            
+            <!-- Viewfinder Screen -->
+            <div class="relative w-full aspect-[4/5] sm:aspect-[4/3] bg-black rounded-xl sm:rounded-2xl overflow-hidden border border-slate-800/80 flex items-center justify-center shadow-inner">
               <video id="camera-stream" autoplay playsinline muted class="w-full h-full object-cover hidden"></video>
               <img id="image-preview" src="" alt="Muzzle preview" class="w-full h-full object-contain hidden" />
               
               <!-- Placeholder when camera is inactive -->
               <div id="camera-placeholder" class="text-center p-6 space-y-3">
-                <div class="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center mx-auto text-slate-400">
-                  <i data-lucide="camera" class="w-8 h-8"></i>
+                <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-slate-800/90 border border-slate-700/60 flex items-center justify-center mx-auto text-emerald-400 shadow-xl">
+                  <i data-lucide="camera" class="w-8 h-8 sm:w-10 sm:h-10"></i>
                 </div>
-                <p class="text-slate-300 font-medium">Position cattle muzzle inside the guide box</p>
-                <p class="text-xs text-slate-500 max-w-xs mx-auto">Ensure camera is 15-30cm from nostrils. Wipe heavy dirt or excess saliva before capture.</p>
+                <div class="space-y-1">
+                  <p class="text-slate-200 text-sm sm:text-base font-bold">Align Cattle Muzzle in Center</p>
+                  <p class="text-xs text-slate-400 max-w-xs mx-auto">15-30 cm distance. Wipe dirt/saliva for high bead clarity.</p>
+                </div>
+                <button onclick="startCamera()" class="mt-2 touch-btn px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-bold shadow-lg shadow-emerald-600/30 inline-flex items-center gap-2">
+                  <i data-lucide="video" class="w-4 h-4"></i>
+                  <span>Open Camera</span>
+                </button>
               </div>
 
-              <!-- Overlay Scanner Laser and Frame -->
-              <div id="scanner-overlay" class="absolute inset-0 pointer-events-none flex items-center justify-center p-6">
-                <div class="relative w-4/5 h-4/5 muzzle-guide-frame flex flex-col justify-between p-3">
-                  <div class="flex justify-between items-center text-[10px] text-emerald-400 font-mono tracking-wider">
+              <!-- Biometric Reticle & Guideline Overlay -->
+              <div id="scanner-overlay" class="absolute inset-0 pointer-events-none flex items-center justify-center p-6 sm:p-8">
+                <div class="relative w-4/5 sm:w-3/4 aspect-[4/3] flex flex-col justify-between p-3.5 rounded-2xl border border-emerald-500/30 bg-emerald-950/10 shadow-[0_0_30px_rgba(16,185,129,0.15)]">
+                  <!-- 4 Corner Brackets -->
+                  <div class="corner-bracket corner-tl"></div>
+                  <div class="corner-bracket corner-tr"></div>
+                  <div class="corner-bracket corner-bl"></div>
+                  <div class="corner-bracket corner-br"></div>
+                  
+                  <!-- Top status line -->
+                  <div class="flex justify-between items-center text-[9px] sm:text-[10px] text-emerald-300 font-mono font-semibold tracking-widest">
                     <span>[ MUZZLE ROI ]</span>
-                    <span>512-DIM ARCFACE</span>
+                    <span>1:N ARCFACE</span>
                   </div>
-                  <div class="scanner-laser absolute w-full h-1.5 left-0"></div>
-                  <div class="text-center text-[11px] text-emerald-300 bg-slate-950/70 py-0.5 rounded backdrop-blur-sm">
-                    Keep muzzle steady & illuminated
+
+                  <!-- Animated Scanner Line -->
+                  <div class="scanner-laser absolute w-full h-1 left-0"></div>
+
+                  <!-- Bottom center instruction pill -->
+                  <div class="text-center text-[10px] sm:text-xs text-emerald-300 bg-slate-950/80 py-1 px-2 rounded-lg backdrop-blur-md border border-emerald-500/20 mx-auto font-medium">
+                    Hold steady: 15-30cm
                   </div>
                 </div>
               </div>
+
+              <!-- In-camera floating switch camera button (Mobile Only) -->
+              <button id="btn-flip-camera" onclick="flipCamera()" class="hidden absolute top-3 right-3 w-10 h-10 rounded-full bg-slate-900/80 backdrop-blur-md text-white border border-slate-700/80 flex items-center justify-center touch-btn shadow-lg">
+                <i data-lucide="switch-camera" class="w-5 h-5 text-emerald-400"></i>
+              </button>
             </div>
 
-            <!-- Capture / Upload Controls -->
-            <div class="mt-4 flex flex-wrap gap-3">
-              <button id="btn-start-camera" onclick="startCamera()" class="flex-1 min-w-[140px] px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-semibold transition flex items-center justify-center gap-2 border border-slate-700">
-                <i data-lucide="video" class="w-4 h-4 text-emerald-400"></i>
-                <span>Start Camera</span>
-              </button>
+            <!-- Mobile Capture & Upload Action Bar -->
+            <div class="mt-3 sm:mt-4 space-y-2">
+              <div class="flex items-center gap-2.5">
+                <!-- Large Shutter Button (Visible when camera active) -->
+                <button id="btn-capture" onclick="captureCameraPhoto()" class="hidden touch-btn flex-1 py-3 sm:py-3.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold text-sm tracking-wide shadow-xl shadow-emerald-500/30 flex items-center justify-center gap-2">
+                  <div class="w-5 h-5 rounded-full border-2 border-white flex items-center justify-center">
+                    <div class="w-2.5 h-2.5 bg-white rounded-full"></div>
+                  </div>
+                  <span>Snap Muzzle Frame</span>
+                </button>
 
-              <button id="btn-capture" onclick="captureCameraPhoto()" class="hidden flex-1 min-w-[140px] px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30">
-                <i data-lucide="aperture" class="w-4 h-4"></i>
-                <span>Capture Frame</span>
-              </button>
+                <!-- Retake button (When photo captured) -->
+                <button id="btn-retake" onclick="startCamera()" class="hidden touch-btn px-4 py-3 sm:py-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs sm:text-sm font-semibold border border-slate-700 flex items-center justify-center gap-1.5">
+                  <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                  <span>Retake</span>
+                </button>
 
-              <label class="flex-1 min-w-[140px] px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-semibold transition flex items-center justify-center gap-2 border border-slate-700 cursor-pointer">
-                <i data-lucide="upload" class="w-4 h-4 text-sky-400"></i>
-                <span>Upload Photo</span>
-                <input type="file" id="identify-file-input" accept="image/*" class="hidden" onchange="handleFileSelect(event)" />
-              </label>
+                <!-- Upload from gallery button -->
+                <label class="touch-btn flex-1 py-3 sm:py-3.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 text-xs sm:text-sm font-semibold transition flex items-center justify-center gap-2 border border-slate-700/80 cursor-pointer text-center">
+                  <i data-lucide="image" class="w-4 h-4 text-sky-400"></i>
+                  <span>Upload Photo</span>
+                  <input type="file" id="identify-file-input" accept="image/*" class="hidden" onchange="handleFileSelect(event)" />
+                </label>
+              </div>
 
-              <button id="btn-run-identify" onclick="runBiometricIdentification()" class="w-full mt-2 px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold text-sm tracking-wide transition shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2 disabled:opacity-50" disabled>
+              <!-- Run 1:N Biometric Identification Action Button -->
+              <button id="btn-run-identify" onclick="runBiometricIdentification()" class="w-full touch-btn py-3.5 sm:py-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-extrabold text-sm sm:text-base tracking-wide transition shadow-xl shadow-emerald-500/25 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed" disabled>
                 <i data-lucide="fingerprint" class="w-5 h-5"></i>
                 <span>Scan & Identify Cattle (1:N)</span>
               </button>
@@ -153,98 +249,100 @@
         </div>
 
         <!-- Recognition Result Card -->
-        <div class="lg:col-span-5 space-y-4">
-          <div id="result-card" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl relative min-h-[420px] flex flex-col justify-between">
-            <div class="space-y-4">
-              <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-                <h3 class="text-base font-semibold text-slate-200 flex items-center gap-2">
-                  <i data-lucide="shield-check" class="w-5 h-5 text-emerald-400"></i>
-                  <span>Biometric Match Result</span>
+        <div class="lg:col-span-5 space-y-3 sm:space-y-4">
+          <div id="result-card" class="bg-slate-900/90 border border-slate-800/80 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-2xl relative min-h-[380px] sm:min-h-[460px] flex flex-col justify-between backdrop-blur-sm">
+            <div class="space-y-3 sm:space-y-4">
+              <!-- Result Card Header -->
+              <div class="flex items-center justify-between pb-3 border-b border-slate-800/80">
+                <h3 class="text-sm sm:text-base font-bold text-slate-100 flex items-center gap-2">
+                  <i data-lucide="shield-check" class="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400"></i>
+                  <span>Biometric Verification</span>
                 </h3>
-                <span id="result-status-badge" class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-800 text-slate-400 border border-slate-700">
-                  Awaiting Scan
+                <span id="result-status-badge" class="px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700">
+                  Ready
                 </span>
               </div>
 
               <!-- Quality Gate Feedback Pill -->
-              <div id="quality-gate-pill" class="hidden p-3 rounded-xl bg-slate-800/80 border text-xs space-y-1">
-                <div class="flex items-center justify-between font-semibold">
+              <div id="quality-gate-pill" class="hidden p-3 rounded-xl bg-slate-800/80 border text-xs space-y-1 transition-all">
+                <div class="flex items-center justify-between font-bold">
                   <span id="qc-title" class="flex items-center gap-1.5"></span>
-                  <span id="qc-blur-score" class="font-mono text-slate-400"></span>
+                  <span id="qc-blur-score" class="font-mono-num text-[11px] text-slate-400"></span>
                 </div>
-                <p id="qc-detail" class="text-slate-300"></p>
+                <p id="qc-detail" class="text-slate-300 text-[11px] leading-relaxed"></p>
               </div>
 
               <!-- Identified Cattle Details -->
-              <div id="cattle-details-box" class="hidden space-y-4 pt-2">
-                <div class="p-4 rounded-xl bg-emerald-950/30 border border-emerald-500/30 space-y-3">
-                  <div class="flex items-center justify-between">
+              <div id="cattle-details-box" class="hidden space-y-3.5 pt-1">
+                <div class="p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-emerald-950/40 to-slate-900/60 border border-emerald-500/30 space-y-3 shadow-lg">
+                  <div class="flex items-start justify-between">
                     <div>
-                      <span class="text-xs uppercase text-emerald-400 font-semibold tracking-wider">Cattle Tag Number</span>
-                      <h4 id="cattle-tag" class="text-2xl font-extrabold text-white mt-0.5">COW-BD-001</h4>
+                      <span class="text-[10px] uppercase text-emerald-400 font-extrabold tracking-wider">Cattle Tag Number</span>
+                      <h4 id="cattle-tag" class="text-xl sm:text-2xl font-black text-white mt-0.5 font-mono-num">COW-BD-001</h4>
                     </div>
                     <div class="text-right">
-                      <span class="text-xs uppercase text-slate-400 font-semibold">Confidence</span>
-                      <div id="cattle-confidence" class="text-xl font-bold text-emerald-400">99.8%</div>
+                      <span class="text-[10px] uppercase text-slate-400 font-bold">Match Score</span>
+                      <div id="cattle-confidence" class="text-lg sm:text-xl font-black text-emerald-400 font-mono-num">99.8%</div>
                     </div>
                   </div>
 
                   <!-- Confidence Meter -->
-                  <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
-                    <div id="confidence-bar" class="bg-gradient-to-r from-teal-500 to-emerald-400 h-2 rounded-full transition-all duration-700" style="width: 0%"></div>
+                  <div class="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden p-0.5 border border-slate-700">
+                    <div id="confidence-bar" class="bg-gradient-to-r from-teal-400 to-emerald-400 h-1.5 rounded-full transition-all duration-700" style="width: 0%"></div>
                   </div>
 
-                  <div class="grid grid-cols-2 gap-3 text-xs pt-1">
-                    <div>
-                      <span class="text-slate-400">Breed:</span>
-                      <p id="cattle-breed" class="font-semibold text-slate-200">Red Chittagong</p>
+                  <!-- Cattle Attributes Grid -->
+                  <div class="grid grid-cols-2 gap-2.5 text-xs pt-1">
+                    <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
+                      <span class="text-[10px] text-slate-400 block">Breed</span>
+                      <p id="cattle-breed" class="font-bold text-slate-100 truncate">Red Chittagong</p>
                     </div>
-                    <div>
-                      <span class="text-slate-400">Gender:</span>
-                      <p id="cattle-gender" class="font-semibold text-slate-200">FEMALE</p>
+                    <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
+                      <span class="text-[10px] text-slate-400 block">Gender</span>
+                      <p id="cattle-gender" class="font-bold text-slate-100">FEMALE</p>
                     </div>
-                    <div>
-                      <span class="text-slate-400">Farm:</span>
-                      <p id="cattle-farm" class="font-semibold text-slate-200">Shahjadpur Green Farm</p>
+                    <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800 col-span-2">
+                      <span class="text-[10px] text-slate-400 block">Farm & Ownership</span>
+                      <p id="cattle-farm" class="font-bold text-slate-100 truncate">Bismillah Dairy Farm</p>
                     </div>
-                    <div>
-                      <span class="text-slate-400">Policy / ID:</span>
-                      <p id="cattle-policy" class="font-semibold text-slate-200">PRANI-2026-99</p>
+                    <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800 col-span-2">
+                      <span class="text-[10px] text-slate-400 block">Insurance Policy No.</span>
+                      <p id="cattle-policy" class="font-bold text-emerald-400 font-mono-num truncate">INS-2026-9921</p>
                     </div>
                   </div>
                 </div>
 
-                <!-- Top Candidates List -->
+                <!-- Top Ranked Candidates List -->
                 <div>
-                  <h5 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Ranked Candidates (Cosine Distance)</h5>
+                  <h5 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Ranked Candidates (Cosine Distance)</h5>
                   <div id="candidate-list" class="space-y-1.5 text-xs"></div>
                 </div>
               </div>
 
               <!-- Rejection / Unknown View -->
-              <div id="rejection-box" class="hidden p-4 rounded-xl bg-rose-950/30 border border-rose-500/30 text-rose-200 space-y-2">
-                <div class="flex items-center gap-2 font-semibold text-rose-400">
-                  <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+              <div id="rejection-box" class="hidden p-4 sm:p-5 rounded-2xl bg-rose-950/30 border border-rose-500/40 text-rose-200 space-y-2.5 shadow-lg">
+                <div class="flex items-center gap-2 font-bold text-rose-400 text-sm">
+                  <i data-lucide="alert-octagon" class="w-5 h-5"></i>
                   <span>No Confirmed Biometric Match</span>
                 </div>
-                <p id="rejection-msg" class="text-xs text-rose-300">Similarity score is below 0.72 threshold. This cattle is not registered in the database.</p>
-                <button onclick="switchTab('register')" class="mt-2 px-3 py-1.5 rounded-lg bg-rose-600/40 hover:bg-rose-600/60 text-white text-xs font-semibold border border-rose-500/50 transition flex items-center gap-1.5">
-                  <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
+                <p id="rejection-msg" class="text-xs text-rose-300/90 leading-relaxed">Similarity score is below 0.72 threshold. This animal is not registered in the database.</p>
+                <button onclick="switchTab('register')" class="touch-btn mt-1 w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold border border-rose-500/50 shadow-md flex items-center justify-center gap-1.5">
+                  <i data-lucide="user-plus" class="w-4 h-4"></i>
                   <span>Register This Animal Now</span>
                 </button>
               </div>
 
-              <!-- Loading Indicator -->
-              <div id="identify-loader" class="hidden py-16 text-center space-y-3">
-                <div class="inline-block w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-                <p class="text-sm text-slate-300 font-medium">Extracting 512-dim ArcFace embedding & scanning gallery...</p>
+              <!-- Loading State -->
+              <div id="identify-loader" class="hidden py-14 text-center space-y-3">
+                <div class="inline-block w-9 h-9 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+                <p class="text-xs sm:text-sm text-slate-300 font-medium">Extracting 512D ArcFace embedding & scanning gallery...</p>
               </div>
             </div>
 
-            <!-- Footer Benchmark Metric -->
-            <div class="pt-4 border-t border-slate-800 text-[11px] text-slate-500 flex justify-between items-center">
+            <!-- Result Card Footer -->
+            <div class="pt-3 border-t border-slate-800/80 text-[11px] text-slate-500 flex justify-between items-center font-mono-num">
               <span id="benchmark-inference-time">Latency: -- ms</span>
-              <span>1:N Open-Set Architecture</span>
+              <span>pgvector HNSW</span>
             </div>
           </div>
         </div>
@@ -252,52 +350,52 @@
     </div>
 
 
-    <!-- ================= SECTION 2: CATTLE REGISTRATION ================= -->
-    <div id="view-register" class="hidden space-y-6 max-w-4xl mx-auto">
-      <div class="pb-2 border-b border-slate-800">
-        <h1 class="text-2xl font-bold text-slate-100">Enroll New Cattle (Biometric Registration)</h1>
-        <p class="text-sm text-slate-400 mt-1">Associate cattle ownership, breed details, and tamper-proof muzzle biometric print.</p>
+    <!-- ================= VIEW 2: CATTLE REGISTRATION ================= -->
+    <div id="view-register" class="hidden space-y-4 sm:space-y-6 max-w-3xl mx-auto">
+      <div class="pb-2 border-b border-slate-800/80">
+        <h1 class="text-lg sm:text-2xl font-extrabold text-slate-100">Enroll Cattle Profile</h1>
+        <p class="text-xs sm:text-sm text-slate-400 mt-0.5">Register ownership, breed data, and tamper-proof muzzle biometric print.</p>
       </div>
 
-      <form id="cattle-reg-form" onsubmit="handleCattleRegistration(event)" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
-        <!-- Farm Selection -->
-        <div class="space-y-4">
-          <h3 class="text-sm font-semibold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+      <form id="cattle-reg-form" onsubmit="handleCattleRegistration(event)" class="bg-slate-900/90 border border-slate-800/80 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-2xl space-y-5">
+        <!-- 1. Farm Information -->
+        <div class="space-y-3">
+          <h3 class="text-xs sm:text-sm font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
             <i data-lucide="warehouse" class="w-4 h-4"></i>
-            <span>1. Farm & Ownership Information</span>
+            <span>1. Farm & Ownership Details</span>
           </h3>
           
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-medium text-slate-300 mb-1">Select Farm *</label>
-              <select id="reg-farm-id" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+            <div class="sm:col-span-8">
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Select Farm *</label>
+              <select id="reg-farm-id" required class="w-full bg-slate-800/90 border border-slate-700/80 rounded-xl px-3.5 py-3 text-sm text-slate-100 focus:outline-none focus:border-emerald-500 h-12">
                 <option value="">-- Choose Farm --</option>
               </select>
             </div>
-            <div class="flex items-end">
-              <button type="button" onclick="promptCreateFarm()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 border border-slate-700 flex items-center gap-1.5 transition">
+            <div class="sm:col-span-4 flex items-end">
+              <button type="button" onclick="promptCreateFarm()" class="w-full touch-btn h-12 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-emerald-300 border border-slate-700/80 flex items-center justify-center gap-1.5">
                 <i data-lucide="plus" class="w-4 h-4"></i>
-                <span>Create New Farm</span>
+                <span>New Farm</span>
               </button>
             </div>
           </div>
         </div>
 
-        <!-- Cattle Metadata -->
-        <div class="space-y-4 pt-4 border-t border-slate-800">
-          <h3 class="text-sm font-semibold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+        <!-- 2. Cattle Profile Metadata -->
+        <div class="space-y-3 pt-4 border-t border-slate-800/80">
+          <h3 class="text-xs sm:text-sm font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
             <i data-lucide="tag" class="w-4 h-4"></i>
-            <span>2. Cattle Identification & Profile</span>
+            <span>2. Cattle Identification</span>
           </h3>
 
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs font-medium text-slate-300 mb-1">Tag / ID Number *</label>
-              <input type="text" id="reg-tag" required placeholder="e.g. COW-BD-2045" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-emerald-500" />
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Tag / ID Number *</label>
+              <input type="text" id="reg-tag" required placeholder="e.g. COW-BD-2045" class="w-full bg-slate-800/90 border border-slate-700/80 rounded-xl px-3.5 py-3 text-sm text-slate-100 focus:outline-none focus:border-emerald-500 h-12 font-mono-num" />
             </div>
             <div>
-              <label class="block text-xs font-medium text-slate-300 mb-1">Breed *</label>
-              <select id="reg-breed" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Breed *</label>
+              <select id="reg-breed" required class="w-full bg-slate-800/90 border border-slate-700/80 rounded-xl px-3.5 py-3 text-sm text-slate-100 focus:outline-none focus:border-emerald-500 h-12">
                 <option value="Red Chittagong">Red Chittagong (RCZ)</option>
                 <option value="Pabna Breed">Pabna Breed</option>
                 <option value="Shahiwal">Shahiwal</option>
@@ -307,42 +405,43 @@
               </select>
             </div>
             <div>
-              <label class="block text-xs font-medium text-slate-300 mb-1">Gender *</label>
-              <select id="reg-gender" required class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Gender *</label>
+              <select id="reg-gender" required class="w-full bg-slate-800/90 border border-slate-700/80 rounded-xl px-3.5 py-3 text-sm text-slate-100 focus:outline-none focus:border-emerald-500 h-12">
                 <option value="FEMALE">Female (Cow / Heifer)</option>
                 <option value="MALE">Male (Bull / Ox)</option>
               </select>
             </div>
             <div>
-              <label class="block text-xs font-medium text-slate-300 mb-1">Color</label>
-              <input type="text" id="reg-color" placeholder="e.g. Reddish Brown, Black & White" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-emerald-500" />
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Color</label>
+              <input type="text" id="reg-color" placeholder="e.g. Reddish Brown" class="w-full bg-slate-800/90 border border-slate-700/80 rounded-xl px-3.5 py-3 text-sm text-slate-100 focus:outline-none focus:border-emerald-500 h-12" />
             </div>
-            <div>
-              <label class="block text-xs font-medium text-slate-300 mb-1">Insurance Policy No.</label>
-              <input type="text" id="reg-policy" placeholder="e.g. INS-2026-7891" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-emerald-500" />
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Insurance Policy No.</label>
+              <input type="text" id="reg-policy" placeholder="e.g. INS-2026-7891" class="w-full bg-slate-800/90 border border-slate-700/80 rounded-xl px-3.5 py-3 text-sm text-slate-100 focus:outline-none focus:border-emerald-500 h-12 font-mono-num" />
             </div>
           </div>
         </div>
 
-        <!-- Muzzle Biometric Photo Upload -->
-        <div class="space-y-4 pt-4 border-t border-slate-800">
-          <h3 class="text-sm font-semibold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+        <!-- 3. Muzzle Biometric Photograph -->
+        <div class="space-y-3 pt-4 border-t border-slate-800/80">
+          <h3 class="text-xs sm:text-sm font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
             <i data-lucide="scan-line" class="w-4 h-4"></i>
             <span>3. Muzzle Biometric Photograph</span>
           </h3>
 
-          <div class="border-2 border-dashed border-slate-700 rounded-xl p-6 text-center hover:border-emerald-500/70 transition cursor-pointer relative" onclick="document.getElementById('reg-file-input').click()">
+          <div class="border-2 border-dashed border-slate-700/80 rounded-2xl p-5 text-center hover:border-emerald-500 transition cursor-pointer relative bg-slate-950/40" onclick="document.getElementById('reg-file-input').click()">
             <input type="file" id="reg-file-input" accept="image/*" required class="hidden" onchange="previewRegFile(event)" />
-            <div id="reg-file-placeholder" class="space-y-2">
-              <i data-lucide="image-plus" class="w-8 h-8 text-slate-400 mx-auto"></i>
-              <p class="text-sm font-medium text-slate-300">Click to upload Muzzle photo</p>
-              <p class="text-xs text-slate-500">High-resolution close-up of nostrils and upper muzzle plate</p>
+            <div id="reg-file-placeholder" class="space-y-2 py-3">
+              <i data-lucide="image-plus" class="w-9 h-9 text-emerald-400 mx-auto"></i>
+              <p class="text-xs sm:text-sm font-bold text-slate-200">Tap to Capture / Upload Muzzle Photo</p>
+              <p class="text-[11px] text-slate-400">High-resolution close-up of nostrils and upper muzzle plate</p>
             </div>
-            <img id="reg-file-preview" src="" alt="Registration preview" class="hidden max-h-48 mx-auto rounded-lg object-contain shadow-md" />
+            <img id="reg-file-preview" src="" alt="Registration preview" class="hidden max-h-48 mx-auto rounded-xl object-contain shadow-xl border border-slate-700" />
           </div>
         </div>
 
-        <button type="submit" id="btn-submit-reg" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold text-sm tracking-wide transition shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2">
+        <!-- Submit Button -->
+        <button type="submit" id="btn-submit-reg" class="w-full touch-btn py-3.5 sm:py-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-extrabold text-sm sm:text-base tracking-wide transition shadow-xl shadow-emerald-500/25 flex items-center justify-center gap-2">
           <i data-lucide="check" class="w-5 h-5"></i>
           <span>Save Profile & Enroll Biometric Print</span>
         </button>
@@ -350,40 +449,81 @@
     </div>
 
 
-    <!-- ================= SECTION 3: CATTLE REGISTRY DIRECTORY ================= -->
-    <div id="view-directory" class="hidden space-y-6">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-800">
+    <!-- ================= VIEW 3: CATTLE REGISTRY DIRECTORY ================= -->
+    <div id="view-directory" class="hidden space-y-4 sm:space-y-6">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-800/80">
         <div>
-          <h1 class="text-2xl font-bold text-slate-100">Cattle Biometric Database Registry</h1>
-          <p class="text-sm text-slate-400 mt-1">Active registered cattle profiles with biometric embeddings.</p>
+          <h1 class="text-lg sm:text-2xl font-extrabold text-slate-100">Cattle Registry</h1>
+          <p class="text-xs sm:text-sm text-slate-400 mt-0.5">Active profiles with enrolled biometric embeddings.</p>
         </div>
-        <button onclick="loadCattleRegistry()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 flex items-center gap-1.5 transition">
+        <button onclick="loadCattleRegistry()" class="touch-btn px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700/80 flex items-center gap-1.5">
           <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
-          <span>Refresh</span>
+          <span class="hidden sm:inline">Refresh</span>
         </button>
       </div>
 
       <!-- Cattle Cards Grid -->
-      <div id="registry-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div id="registry-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         <!-- Rendered via JavaScript -->
       </div>
     </div>
 
   </main>
 
+
+  <!-- ================= MOBILE BOTTOM NAVIGATION DOCK (VISIBLE ON MOBILE ONLY) ================= -->
+  <nav class="md:hidden fixed bottom-3 left-3 right-3 z-50 bg-slate-900/90 backdrop-blur-2xl border border-slate-800/90 rounded-2xl p-1.5 shadow-[0_10px_30px_rgba(0,0,0,0.6)] flex justify-around items-center">
+    
+    <!-- 1:N Scan Button -->
+    <button id="mob-tab-identify" onclick="switchTab('identify')" class="touch-btn flex-1 py-2 px-1 flex flex-col items-center justify-center space-y-1 rounded-xl text-emerald-400 font-bold transition-all bg-emerald-500/10">
+      <i data-lucide="scan" class="w-5 h-5"></i>
+      <span class="text-[10px] tracking-tight">1:N Scan</span>
+    </button>
+
+    <!-- Register Button -->
+    <button id="mob-tab-register" onclick="switchTab('register')" class="touch-btn flex-1 py-2 px-1 flex flex-col items-center justify-center space-y-1 rounded-xl text-slate-400 font-medium transition-all">
+      <i data-lucide="plus-circle" class="w-5 h-5"></i>
+      <span class="text-[10px] tracking-tight">Register</span>
+    </button>
+
+    <!-- Registry Directory Button -->
+    <button id="mob-tab-directory" onclick="switchTab('directory')" class="touch-btn flex-1 py-2 px-1 flex flex-col items-center justify-center space-y-1 rounded-xl text-slate-400 font-medium transition-all">
+      <i data-lucide="database" class="w-5 h-5"></i>
+      <span class="text-[10px] tracking-tight">Registry</span>
+    </button>
+  </nav>
+
+  <!-- ================= JAVASCRIPT APP LOGIC ================= -->
   <script>
     const API_BASE = window.location.origin + '/api/v1';
     let currentVideoStream = null;
     let selectedIdentifyBlob = null;
+    let facingMode = "environment"; // default to back camera on mobile phones
 
-    // Tab Switching
+    // Tab Switching for both Desktop and Mobile Nav
     function switchTab(tabId) {
       ['identify', 'register', 'directory'].forEach(t => {
         document.getElementById(`view-${t}`).classList.add('hidden');
-        document.getElementById(`tab-${t}`).className = 'px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all text-slate-300 hover:text-white flex items-center space-x-1.5';
+        
+        // Desktop nav styling
+        const deskBtn = document.getElementById(`desk-tab-${t}`);
+        if (deskBtn) deskBtn.className = 'px-4 py-1.5 rounded-lg text-sm font-semibold transition-all text-slate-300 hover:text-white flex items-center space-x-2';
+
+        // Mobile nav styling
+        const mobBtn = document.getElementById(`mob-tab-${t}`);
+        if (mobBtn) mobBtn.className = 'touch-btn flex-1 py-2 px-1 flex flex-col items-center justify-center space-y-1 rounded-xl text-slate-400 font-medium transition-all';
       });
+
+      // Activate selected view
       document.getElementById(`view-${tabId}`).classList.remove('hidden');
-      document.getElementById(`tab-${tabId}`).className = 'px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all bg-emerald-600 text-white shadow-sm flex items-center space-x-1.5';
+
+      // Style active desktop tab
+      const activeDesk = document.getElementById(`desk-tab-${tabId}`);
+      if (activeDesk) activeDesk.className = 'px-4 py-1.5 rounded-lg text-sm font-semibold transition-all bg-emerald-600 text-white shadow-sm flex items-center space-x-2';
+
+      // Style active mobile tab
+      const activeMob = document.getElementById(`mob-tab-${tabId}`);
+      if (activeMob) activeMob.className = 'touch-btn flex-1 py-2 px-1 flex flex-col items-center justify-center space-y-1 rounded-xl text-emerald-400 font-bold transition-all bg-emerald-500/10';
 
       if (tabId === 'register') {
         loadFarmsDropdown();
@@ -393,28 +533,47 @@
       lucide.createIcons();
     }
 
-    // Camera Stream Management
+    // Camera Stream Management (Optimized for Mobile Back Camera)
     async function startCamera() {
       const video = document.getElementById('camera-stream');
       const placeholder = document.getElementById('camera-placeholder');
       const preview = document.getElementById('image-preview');
 
+      // Stop any existing stream
+      if (currentVideoStream) {
+        currentVideoStream.getTracks().forEach(track => track.stop());
+      }
+
       try {
         currentVideoStream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }
+          video: {
+            facingMode: { ideal: facingMode },
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          }
         });
         video.srcObject = currentVideoStream;
         video.classList.remove('hidden');
         placeholder.classList.add('hidden');
         preview.classList.add('hidden');
 
-        document.getElementById('btn-start-camera').classList.add('hidden');
         document.getElementById('btn-capture').classList.remove('hidden');
+        document.getElementById('btn-retake').classList.add('hidden');
+        document.getElementById('btn-flip-camera').classList.remove('hidden');
       } catch (err) {
-        alert("Camera access failed: " + err.message + ". You can use 'Upload Photo' instead.");
+        console.warn("Camera access failed:", err);
+        alert("Camera could not be started: " + err.message + ". You can use 'Upload Photo' to select a photo from your gallery.");
       }
+      lucide.createIcons();
     }
 
+    // Flip Camera (Front / Back switch on mobile)
+    function flipCamera() {
+      facingMode = (facingMode === "environment") ? "user" : "environment";
+      startCamera();
+    }
+
+    // Capture Frame from Camera
     function captureCameraPhoto() {
       const video = document.getElementById('camera-stream');
       const canvas = document.createElement('canvas');
@@ -423,6 +582,9 @@
       const ctx = canvas.getContext('2d');
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
+      // Trigger light haptic vibration on mobile
+      if (navigator.vibrate) navigator.vibrate(30);
+
       canvas.toBlob(blob => {
         selectedIdentifyBlob = blob;
         const preview = document.getElementById('image-preview');
@@ -430,16 +592,19 @@
         preview.classList.remove('hidden');
         video.classList.add('hidden');
 
-        // Stop stream
+        // Stop camera stream to preserve battery
         if (currentVideoStream) {
           currentVideoStream.getTracks().forEach(track => track.stop());
         }
+
         document.getElementById('btn-capture').classList.add('hidden');
-        document.getElementById('btn-start-camera').classList.remove('hidden');
+        document.getElementById('btn-retake').classList.remove('hidden');
+        document.getElementById('btn-flip-camera').classList.add('hidden');
         document.getElementById('btn-run-identify').disabled = false;
       }, 'image/jpeg', 0.95);
     }
 
+    // Handle Gallery File Selection
     function handleFileSelect(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -451,9 +616,11 @@
       document.getElementById('camera-placeholder').classList.add('hidden');
       document.getElementById('camera-stream').classList.add('hidden');
       document.getElementById('btn-run-identify').disabled = false;
+      document.getElementById('btn-retake').classList.remove('hidden');
+      document.getElementById('btn-capture').classList.add('hidden');
     }
 
-    // 1:N Identification API Call
+    // 1:N Biometric Identification API
     async function runBiometricIdentification() {
       if (!selectedIdentifyBlob) return;
 
@@ -479,7 +646,7 @@
         const data = await res.json();
         loader.classList.add('hidden');
 
-        // Render Quality Pill
+        // Render Quality Feedback Pill
         qcPill.classList.remove('hidden');
         const qc = data.quality_assessment;
         document.getElementById('qc-blur-score').innerText = `Sharpness: ${qc.blur_score}`;
@@ -496,8 +663,11 @@
         document.getElementById('benchmark-inference-time').innerText = `Latency: ${data.processing_time_ms} ms`;
 
         if (data.matched && data.cattle) {
+          // Trigger double haptic vibration on match
+          if (navigator.vibrate) navigator.vibrate([40, 40, 40]);
+
           statusBadge.innerText = 'MATCH CONFIRMED';
-          statusBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40';
+          statusBadge.className = 'px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40';
 
           detailsBox.classList.remove('hidden');
           document.getElementById('cattle-tag').innerText = data.cattle.tag_number;
@@ -512,14 +682,14 @@
           // Candidate list
           const candidateContainer = document.getElementById('candidate-list');
           candidateContainer.innerHTML = data.top_candidates.map(c => `
-            <div class="flex justify-between items-center bg-slate-800/60 p-2 rounded-lg border border-slate-700/50">
-              <span class="font-medium text-slate-200">${c.tag_number} (${c.breed})</span>
-              <span class="font-mono text-emerald-400 font-bold">${(c.similarity_score * 100).toFixed(1)}%</span>
+            <div class="flex justify-between items-center bg-slate-800/60 p-2.5 rounded-xl border border-slate-700/50">
+              <span class="font-semibold text-slate-200 text-xs">${c.tag_number} (${c.breed})</span>
+              <span class="font-mono-num text-emerald-400 font-extrabold text-xs">${(c.similarity_score * 100).toFixed(1)}%</span>
             </div>
           `).join('');
         } else {
           statusBadge.innerText = data.status;
-          statusBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-500/20 text-rose-400 border border-rose-500/40';
+          statusBadge.className = 'px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-extrabold bg-rose-500/20 text-rose-400 border border-rose-500/40';
 
           rejectionBox.classList.remove('hidden');
           document.getElementById('rejection-msg').innerText = data.message;
@@ -527,60 +697,12 @@
 
       } catch (err) {
         loader.classList.add('hidden');
-        alert('Identification failed: ' + err.message);
+        alert('Identification request failed: ' + err.message);
       }
       lucide.createIcons();
     }
 
-    // Cattle Registration Handlers
-    function previewRegFile(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      const preview = document.getElementById('reg-file-preview');
-      preview.src = URL.createObjectURL(file);
-      preview.classList.remove('hidden');
-      document.getElementById('reg-file-placeholder').classList.add('hidden');
-    }
-
-    async function loadFarmsDropdown() {
-      try {
-        const res = await fetch(`${API_BASE}/farms/`);
-        const farms = await res.json();
-        const sel = document.getElementById('reg-farm-id');
-        sel.innerHTML = '<option value="">-- Choose Farm --</option>' + farms.map(f => `
-          <option value="${f.id}">${f.name} (${f.owner_name} - ${f.phone})</option>
-        `).join('');
-      } catch (e) {
-        console.error(e);
-      }
-    }
-
-    async function promptCreateFarm() {
-      const name = prompt("Enter Farm Name:");
-      if (!name) return;
-      const owner = prompt("Owner Name:");
-      const phone = prompt("Phone Number:");
-      if (!owner || !phone) return;
-
-      try {
-        const res = await fetch(`${API_BASE}/farms/`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, owner_name: owner, phone, district: "Sirajganj", upazila: "Shahjadpur" })
-        });
-        if (res.ok) {
-          alert("Farm created successfully!");
-          loadFarmsDropdown();
-        } else {
-          const err = await res.json();
-          alert("Failed: " + err.detail);
-        }
-      } catch (e) {
-        alert(e.message);
-      }
-    }
-
-    // IndexedDB Offline Queue Implementation
+    // ================= INDEXEDDB OFFLINE QUEUE =================
     const DB_NAME = 'cattleprint_offline_db';
     const STORE_NAME = 'pending_enrollments';
 
@@ -645,7 +767,7 @@
       if (!isOnline || records.length > 0) {
         pill.classList.remove('hidden');
         pill.classList.add('flex');
-        textEl.innerText = isOnline ? 'Pending Sync' : 'Offline Mode';
+        textEl.innerText = isOnline ? 'Sync Pending' : 'Offline Mode';
       } else {
         pill.classList.add('hidden');
         pill.classList.remove('flex');
@@ -661,7 +783,6 @@
 
       for (const rec of records) {
         try {
-          // 1. Create cattle profile
           const cattleRes = await fetch(`${API_BASE}/cattle/`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -670,7 +791,6 @@
           if (!cattleRes.ok) throw new Error("Cattle profile sync failed");
           const cattle = await cattleRes.json();
 
-          // 2. Upload biometric photo
           const formData = new FormData();
           formData.append('cattle_id', cattle.id);
           formData.append('file', rec.imageBlob, 'offline_muzzle.jpg');
@@ -681,11 +801,10 @@
           });
           if (!bioRes.ok) throw new Error("Biometric print sync failed");
 
-          // Remove synced record
           await deleteOfflineRecord(rec.id);
         } catch (err) {
           console.error("Sync item failed:", err);
-          break; // Stop on first error to retry later
+          break;
         }
       }
 
@@ -700,11 +819,59 @@
     });
     window.addEventListener('offline', () => updateOfflinePill());
 
+    // ================= REGISTRATION & DIRECTORY HANDLERS =================
+    function previewRegFile(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const preview = document.getElementById('reg-file-preview');
+      preview.src = URL.createObjectURL(file);
+      preview.classList.remove('hidden');
+      document.getElementById('reg-file-placeholder').classList.add('hidden');
+    }
+
+    async function loadFarmsDropdown() {
+      try {
+        const res = await fetch(`${API_BASE}/farms/`);
+        const farms = await res.json();
+        const sel = document.getElementById('reg-farm-id');
+        sel.innerHTML = '<option value="">-- Choose Farm --</option>' + farms.map(f => `
+          <option value="${f.id}">${f.name} (${f.owner_name} - ${f.phone})</option>
+        `).join('');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function promptCreateFarm() {
+      const name = prompt("Enter Farm Name:");
+      if (!name) return;
+      const owner = prompt("Owner Name:");
+      const phone = prompt("Phone Number:");
+      if (!owner || !phone) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/farms/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, owner_name: owner, phone, district: "Sirajganj", upazila: "Shahjadpur" })
+        });
+        if (res.ok) {
+          alert("Farm created successfully!");
+          loadFarmsDropdown();
+        } else {
+          const err = await res.json();
+          alert("Failed: " + err.detail);
+        }
+      } catch (e) {
+        alert(e.message);
+      }
+    }
+
     async function handleCattleRegistration(e) {
       e.preventDefault();
       const btn = document.getElementById('btn-submit-reg');
       btn.disabled = true;
-      btn.innerText = "Registering & Processing Biometrics...";
+      btn.innerText = "Registering...";
 
       const farm_id = document.getElementById('reg-farm-id').value;
       const tag_number = document.getElementById('reg-tag').value;
@@ -719,10 +886,9 @@
         farm_id, tag_number, breed, gender, color, insurance_policy_no: insurance, status: "ACTIVE"
       };
 
-      // Check Offline Mode
       if (!navigator.onLine) {
         await saveOfflineRecord({ cattleData, imageBlob: file, timestamp: new Date().toISOString() });
-        alert(`Offline Mode Active: Cattle #${tag_number} saved to local offline queue. It will automatically upload once internet connects!`);
+        alert(`Offline Mode Active: Cattle #${tag_number} safely preserved in local offline storage. It will auto-upload when you reconnect!`);
         document.getElementById('cattle-reg-form').reset();
         btn.disabled = false;
         btn.innerHTML = '<i data-lucide="check" class="w-5 h-5"></i><span>Save Profile & Enroll Biometric Print</span>';
@@ -731,7 +897,6 @@
       }
 
       try {
-        // 1. Create Cattle Profile
         const cattleRes = await fetch(`${API_BASE}/cattle/`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -743,7 +908,6 @@
         }
         const cattle = await cattleRes.json();
 
-        // 2. Upload Muzzle Biometrics
         const formData = new FormData();
         formData.append('cattle_id', cattle.id);
         formData.append('file', file);
@@ -757,14 +921,13 @@
           throw new Error(err.detail);
         }
 
-        alert(`Success! Cattle #${tag_number} successfully enrolled with 512-dim biometric print.`);
+        alert(`Success! Cattle #${tag_number} successfully registered with 512D biometric print.`);
         document.getElementById('cattle-reg-form').reset();
         switchTab('directory');
       } catch (err) {
-        // Network drop during request -> fallback to offline save
         if (err.message.includes('fetch') || err.message.includes('Network')) {
           await saveOfflineRecord({ cattleData, imageBlob: file, timestamp: new Date().toISOString() });
-          alert(`Network interruption: Cattle #${tag_number} safely preserved in offline queue!`);
+          alert(`Network dropped: Cattle #${tag_number} preserved in offline queue!`);
           document.getElementById('cattle-reg-form').reset();
         } else {
           alert("Registration failed: " + err.message);
@@ -776,7 +939,6 @@
       }
     }
 
-    // Add Multi-Session Muzzle to existing cattle
     async function addSessionMuzzle(cattleId, tagNumber) {
       const input = document.createElement('input');
       input.type = 'file';
@@ -807,61 +969,60 @@
       input.click();
     }
 
-    // Registry Directory
     async function loadCattleRegistry() {
       const container = document.getElementById('registry-grid');
-      container.innerHTML = '<div class="col-span-full py-12 text-center text-slate-500">Loading registry...</div>';
+      container.innerHTML = '<div class="col-span-full py-12 text-center text-slate-500 text-xs">Loading cattle registry...</div>';
 
       try {
         const res = await fetch(`${API_BASE}/cattle/`);
         const cattleList = await res.json();
 
         if (cattleList.length === 0) {
-          container.innerHTML = '<div class="col-span-full py-12 text-center text-slate-500">No cattle profiles registered yet.</div>';
+          container.innerHTML = '<div class="col-span-full py-12 text-center text-slate-500 text-xs">No cattle profiles registered yet.</div>';
           return;
         }
 
         container.innerHTML = cattleList.map(c => `
-          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3 hover:border-slate-700 transition flex flex-col justify-between">
+          <div class="bg-slate-900/90 border border-slate-800/80 rounded-2xl p-4 sm:p-5 space-y-3 shadow-lg flex flex-col justify-between">
             <div class="space-y-3">
               <div class="flex justify-between items-start">
                 <div>
-                  <span class="text-xs uppercase text-emerald-400 font-semibold tracking-wider">${c.breed}</span>
-                  <h4 class="text-lg font-bold text-white">${c.tag_number}</h4>
+                  <span class="text-[10px] uppercase text-emerald-400 font-extrabold tracking-wider">${c.breed}</span>
+                  <h4 class="text-base sm:text-lg font-black text-white font-mono-num">${c.tag_number}</h4>
                 </div>
-                <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                   ${c.status}
                 </span>
               </div>
 
               <div class="text-xs text-slate-400 space-y-1">
-                <p>Gender: <span class="text-slate-200 font-medium">${c.gender}</span></p>
-                <p>Color: <span class="text-slate-200 font-medium">${c.color || 'Standard'}</span></p>
-                <p>Insurance: <span class="text-slate-200 font-medium">${c.insurance_policy_no || 'None'}</span></p>
-                <p>Biometrics Enrolled: <span class="text-emerald-400 font-bold">${c.biometrics.length} session(s)</span></p>
+                <p>Gender: <span class="text-slate-200 font-semibold">${c.gender}</span></p>
+                <p>Color: <span class="text-slate-200 font-semibold">${c.color || 'Standard'}</span></p>
+                <p>Insurance: <span class="text-slate-200 font-semibold font-mono-num">${c.insurance_policy_no || 'None'}</span></p>
+                <p>Sessions: <span class="text-emerald-400 font-bold font-mono-num">${c.biometrics.length} session(s)</span></p>
               </div>
 
               ${c.biometrics.length > 0 ? `
-                <div class="pt-2 border-t border-slate-800 flex items-center gap-2">
-                  <img src="/${c.biometrics[0].cropped_image_path}" class="w-12 h-12 rounded-lg object-cover border border-slate-700" alt="Muzzle crop" />
+                <div class="pt-2 border-t border-slate-800 flex items-center gap-2.5">
+                  <img src="/${c.biometrics[0].cropped_image_path}" class="w-12 h-12 rounded-xl object-cover border border-slate-700 shadow-sm" alt="Muzzle crop" />
                   <div class="text-[11px] text-slate-400">
-                    <p class="font-medium text-slate-300">Biometric ROI Enrolled</p>
-                    <p>Quality Score: ${c.biometrics[0].quality_score.toFixed(1)}</p>
+                    <p class="font-bold text-slate-200">Enrolled ROI Plate</p>
+                    <p class="font-mono-num text-[10px]">Sharpness: ${c.biometrics[0].quality_score.toFixed(1)}</p>
                   </div>
                 </div>
               ` : ''}
             </div>
 
-            <div class="pt-3 border-t border-slate-800 flex justify-end">
-              <button onclick="addSessionMuzzle('${c.id}', '${c.tag_number}')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold border border-slate-700 flex items-center gap-1.5 transition">
+            <div class="pt-3 border-t border-slate-800/80 flex justify-end">
+              <button onclick="addSessionMuzzle('${c.id}', '${c.tag_number}')" class="touch-btn px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 flex items-center gap-1.5 shadow-sm">
                 <i data-lucide="camera" class="w-3.5 h-3.5 text-emerald-400"></i>
-                <span>+ Add Muzzle Session</span>
+                <span>+ Add Session</span>
               </button>
             </div>
           </div>
         `).join('');
       } catch (err) {
-        container.innerHTML = `<div class="col-span-full py-12 text-center text-rose-400">${err.message}</div>`;
+        container.innerHTML = `<div class="col-span-full py-12 text-center text-rose-400 text-xs">${err.message}</div>`;
       }
       lucide.createIcons();
     }
