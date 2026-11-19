@@ -1,0 +1,31 @@
+# Core Computer Vision & Deep Learning
+numpy>=1.22.0
+opencv-python-headless>=4.8.0
+pillow>=9.5.0
+scikit-learn>=1.2.0
+
+# Deep Learning Framework
+torch>=2.0.0
+torchvision>=0.15.0
+
+# Backend & API
+fastapi>=0.104.0
+uvicorn[standard]>=0.23.0
+pydantic>=2.4.0
+pydantic-settings>=2.0.0
+python-multipart>=0.0.6
+aiofiles>=23.2.0
+
+# Database & Vector Engine
+sqlalchemy>=2.0.0
+greenlet>=3.0.0
+asyncpg>=0.28.0
+aiosqlite>=0.19.0
+pgvector>=0.2.0
+psycopg2-binary>=2.9.9
+
+# Testing & Utilities
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+httpx>=0.25.0
+requests>=2.31.0

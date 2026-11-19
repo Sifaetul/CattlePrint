@@ -1,0 +1,41 @@
+version: "3.8"
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: cattleprint_postgres
+    environment:
+      POSTGRES_DB: cattleprint
+      POSTGRES_USER: cattle_admin
+      POSTGRES_PASSWORD: secure_biometric_pass_2026
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cattle_admin -d cattleprint"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cattleprint_api
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+asyncpg://cattle_admin:secure_biometric_pass_2026@db:5432/cattleprint
+      SIMILARITY_THRESHOLD: 0.72
+      BORDERLINE_THRESHOLD: 0.60
+      STORAGE_DIR: /app/storage
+    ports:
+      - "8000:8000"
+    volumes:
+      - storage_data:/app/storage
+
+volumes:
+  postgres_data:
+  storage_data:
