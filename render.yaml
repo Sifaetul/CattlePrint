@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: cattleprint-biometrics
+    env: python
+    plan: free
+    buildCommand: ./build.sh
+    startCommand: uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: PYTHONPATH
+        value: .
+      - key: SIMILARITY_THRESHOLD
+        value: "0.72"
+      - key: BORDERLINE_THRESHOLD
+        value: "0.60"
