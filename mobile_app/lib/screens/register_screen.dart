@@ -15,9 +15,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _tagCtrl = TextEditingController();
   final _colorCtrl = TextEditingController();
   final _policyCtrl = TextEditingController();
+  final _customBreedCtrl = TextEditingController();
 
   String? _selectedFarmId;
   String _selectedBreed = 'Red Chittagong';
+  bool _isCustomBreed = false;
   String _selectedGender = 'FEMALE';
   File? _selectedImage;
   bool _isLoading = false;
@@ -58,12 +60,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
+    final finalBreed = _isCustomBreed ? _customBreedCtrl.text.trim() : _selectedBreed;
+    if (finalBreed.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please specify a breed name.')));
+      return;
+    }
+
     setState(() => _isLoading = true);
     try {
       await ApiService.registerCattle(
         farmId: _selectedFarmId!,
         tagNumber: _tagCtrl.text.trim(),
-        breed: _selectedBreed,
+        breed: finalBreed,
         gender: _selectedGender,
         color: _colorCtrl.text.trim(),
         insurancePolicy: _policyCtrl.text.trim(),
@@ -131,27 +139,52 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Breed Dropdown
-              const Text('Breed', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 6),
-              DropdownButtonFormField<String>(
-                value: _selectedBreed,
-                dropdownColor: const Color(0xFF0F172A),
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: const Color(0xFF1E293B),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                items: [
-                  'Red Chittagong',
-                  'Pabna Breed',
-                  'Shahiwal',
-                  'Holstein Friesian Cross',
-                  'Local Deshi',
-                ].map((b) => DropdownMenuItem(value: b, child: Text(b))).toList(),
-                onChanged: (val) => setState(() => _selectedBreed = val!),
+              // Breed Selection
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Breed Classification', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
+                  TextButton(
+                    onPressed: () => setState(() => _isCustomBreed = !_isCustomBreed),
+                    child: Text(_isCustomBreed ? 'Choose from list' : '+ Custom Breed', style: const TextStyle(color: Color(0xFF10B981), fontSize: 12)),
+                  ),
+                ],
               ),
+              const SizedBox(height: 4),
+              if (!_isCustomBreed)
+                DropdownButtonFormField<String>(
+                  value: _selectedBreed,
+                  dropdownColor: const Color(0xFF0F172A),
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: const Color(0xFF1E293B),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  items: [
+                    'Red Chittagong',
+                    'Pabna Breed',
+                    'Shahiwal',
+                    'Holstein Friesian Cross',
+                    'Local Deshi',
+                    'Munshiganj White',
+                    'Brahman Cross',
+                  ].map((b) => DropdownMenuItem(value: b, child: Text(b))).toList(),
+                  onChanged: (val) => setState(() => _selectedBreed = val!),
+                )
+              else
+                TextFormField(
+                  controller: _customBreedCtrl,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    hintText: 'Type custom breed (e.g. Gir / Jersey / Sahiwal-Cross)',
+                    hintStyle: const TextStyle(color: Colors.white38),
+                    filled: true,
+                    fillColor: const Color(0xFF1E293B),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF10B981))),
+                  ),
+                  validator: (v) => _isCustomBreed && (v == null || v.isEmpty) ? 'Enter breed name' : null,
+                ),
               const SizedBox(height: 16),
 
               // Photo Picker Box
