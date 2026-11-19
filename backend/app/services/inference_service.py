@@ -42,6 +42,17 @@ class BiometricInferenceService:
             embedding_dim=model_config.embedding_dim,
             pretrained_backbone=False,
         ).to(self.device)
+
+        # Load trained weights if checkpoint exists
+        from ml_engine.config import path_config
+        weights_file = path_config.weights_dir / "cattleprint_arcface_best.pt"
+        if weights_file.exists():
+            try:
+                state_dict = torch.load(weights_file, map_location=self.device)
+                self.net.load_state_dict(state_dict, strict=False)
+            except Exception:
+                pass
+
         self.net.eval()
 
         # Image preprocessing transform
