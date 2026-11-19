@@ -60,8 +60,27 @@ class BiometricEvaluator:
         fpr, tpr, _ = roc_curve(labels, scores)
         roc_auc = auc(fpr, tpr)
 
+        # Classification metrics at optimal threshold
+        tp = np.sum(genuine_scores >= optimal_threshold)
+        fn = np.sum(genuine_scores < optimal_threshold)
+        fp = np.sum(impostor_scores >= optimal_threshold)
+        tn = np.sum(impostor_scores < optimal_threshold)
+
+        accuracy = (tp + tn) / (total_genuine + total_impostor)
+        precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+        recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+        f1_score = (2.0 * precision * recall) / (precision + recall) if (precision + recall) > 0 else 0.0
+        far_at_opt = fp / total_impostor
+        frr_at_opt = fn / total_genuine
+
         return {
-            "eer": float(round(eer, 4)),
+            "identification_accuracy": float(round(accuracy * 100.0, 2)),
+            "precision": float(round(precision * 100.0, 2)),
+            "recall": float(round(recall * 100.0, 2)),
+            "f1_score": float(round(f1_score * 100.0, 2)),
+            "far": float(round(far_at_opt * 100.0, 4)),
+            "frr": float(round(frr_at_opt * 100.0, 4)),
+            "eer": float(round(eer * 100.0, 4)),
             "optimal_threshold": float(round(optimal_threshold, 4)),
             "roc_auc": float(round(roc_auc, 4)),
             "mean_genuine_similarity": float(round(np.mean(genuine_scores), 4)),

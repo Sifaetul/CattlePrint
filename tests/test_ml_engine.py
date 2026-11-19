@@ -84,4 +84,8 @@ def test_biometric_evaluator_metrics():
     results = BiometricEvaluator.calculate_far_frr_eer(genuine, impostor)
     assert "eer" in results
     assert "optimal_threshold" in results
+    assert "precision" in results
+    assert "recall" in results
+    assert "f1_score" in results
+    assert "identification_accuracy" in results
     assert results["roc_auc"] > 0.90  # Well-separated distributions

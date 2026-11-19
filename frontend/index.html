@@ -44,21 +44,32 @@
         </div>
       </div>
       
-      <!-- Nav Tabs -->
-      <nav class="flex space-x-1 sm:space-x-2 bg-slate-800/60 p-1 rounded-xl border border-slate-700/60">
-        <button id="tab-identify" onclick="switchTab('identify')" class="px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all bg-emerald-600 text-white shadow-sm flex items-center space-x-1.5">
-          <i data-lucide="scan" class="w-4 h-4"></i>
-          <span>1:N Scan</span>
-        </button>
-        <button id="tab-register" onclick="switchTab('register')" class="px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all text-slate-300 hover:text-white flex items-center space-x-1.5">
-          <i data-lucide="plus-circle" class="w-4 h-4"></i>
-          <span>Register Cattle</span>
-        </button>
-        <button id="tab-directory" onclick="switchTab('directory')" class="px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all text-slate-300 hover:text-white flex items-center space-x-1.5">
-          <i data-lucide="database" class="w-4 h-4"></i>
-          <span>Registry</span>
-        </button>
-      </nav>
+      <!-- Nav Tabs & Offline Sync Indicator -->
+      <div class="flex items-center space-x-2 sm:space-x-4">
+        <!-- Offline Status Pill -->
+        <div id="offline-status-pill" class="hidden items-center space-x-2 px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300">
+          <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+          <span id="offline-pill-text">Offline</span>
+          <button id="btn-sync-offline" onclick="syncOfflineQueue()" class="ml-1 px-2 py-0.5 rounded bg-amber-500/20 hover:bg-amber-500/40 text-[11px] font-bold text-amber-200 transition">
+            Sync (<span id="offline-queue-count">0</span>)
+          </button>
+        </div>
+
+        <nav class="flex space-x-1 sm:space-x-2 bg-slate-800/60 p-1 rounded-xl border border-slate-700/60">
+          <button id="tab-identify" onclick="switchTab('identify')" class="px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all bg-emerald-600 text-white shadow-sm flex items-center space-x-1.5">
+            <i data-lucide="scan" class="w-4 h-4"></i>
+            <span>1:N Scan</span>
+          </button>
+          <button id="tab-register" onclick="switchTab('register')" class="px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all text-slate-300 hover:text-white flex items-center space-x-1.5">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            <span>Register Cattle</span>
+          </button>
+          <button id="tab-directory" onclick="switchTab('directory')" class="px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all text-slate-300 hover:text-white flex items-center space-x-1.5">
+            <i data-lucide="database" class="w-4 h-4"></i>
+            <span>Registry</span>
+          </button>
+        </nav>
+      </div>
     </div>
   </header>
 
@@ -569,6 +580,126 @@
       }
     }
 
+    // IndexedDB Offline Queue Implementation
+    const DB_NAME = 'cattleprint_offline_db';
+    const STORE_NAME = 'pending_enrollments';
+
+    function initIndexedDB() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(DB_NAME, 1);
+        req.onupgradeneeded = e => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(STORE_NAME)) {
+            db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
+          }
+        };
+        req.onsuccess = e => resolve(e.target.result);
+        req.onerror = e => reject(e.target.error);
+      });
+    }
+
+    async function saveOfflineRecord(record) {
+      const db = await initIndexedDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        tx.objectStore(STORE_NAME).add(record);
+        tx.oncomplete = () => {
+          updateOfflinePill();
+          resolve();
+        };
+        tx.onerror = e => reject(e.target.error);
+      });
+    }
+
+    async function getOfflineRecords() {
+      const db = await initIndexedDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, 'readonly');
+        const req = tx.objectStore(STORE_NAME).getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = e => reject(e.target.error);
+      });
+    }
+
+    async function deleteOfflineRecord(id) {
+      const db = await initIndexedDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        tx.objectStore(STORE_NAME).delete(id);
+        tx.oncomplete = () => {
+          updateOfflinePill();
+          resolve();
+        };
+      });
+    }
+
+    async function updateOfflinePill() {
+      const pill = document.getElementById('offline-status-pill');
+      const countEl = document.getElementById('offline-queue-count');
+      const textEl = document.getElementById('offline-pill-text');
+
+      const isOnline = navigator.onLine;
+      const records = await getOfflineRecords();
+
+      countEl.innerText = records.length;
+      if (!isOnline || records.length > 0) {
+        pill.classList.remove('hidden');
+        pill.classList.add('flex');
+        textEl.innerText = isOnline ? 'Pending Sync' : 'Offline Mode';
+      } else {
+        pill.classList.add('hidden');
+        pill.classList.remove('flex');
+      }
+    }
+
+    async function syncOfflineQueue() {
+      const records = await getOfflineRecords();
+      if (records.length === 0) return;
+
+      const btn = document.getElementById('btn-sync-offline');
+      btn.innerText = "Syncing...";
+
+      for (const rec of records) {
+        try {
+          // 1. Create cattle profile
+          const cattleRes = await fetch(`${API_BASE}/cattle/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(rec.cattleData)
+          });
+          if (!cattleRes.ok) throw new Error("Cattle profile sync failed");
+          const cattle = await cattleRes.json();
+
+          // 2. Upload biometric photo
+          const formData = new FormData();
+          formData.append('cattle_id', cattle.id);
+          formData.append('file', rec.imageBlob, 'offline_muzzle.jpg');
+
+          const bioRes = await fetch(`${API_BASE}/biometrics/register-muzzle`, {
+            method: 'POST',
+            body: formData
+          });
+          if (!bioRes.ok) throw new Error("Biometric print sync failed");
+
+          // Remove synced record
+          await deleteOfflineRecord(rec.id);
+        } catch (err) {
+          console.error("Sync item failed:", err);
+          break; // Stop on first error to retry later
+        }
+      }
+
+      await updateOfflinePill();
+      alert("Offline records successfully synced with central database!");
+      loadCattleRegistry();
+    }
+
+    window.addEventListener('online', () => {
+      updateOfflinePill();
+      syncOfflineQueue();
+    });
+    window.addEventListener('offline', () => updateOfflinePill());
+
     async function handleCattleRegistration(e) {
       e.preventDefault();
       const btn = document.getElementById('btn-submit-reg');
@@ -582,15 +713,29 @@
       const color = document.getElementById('reg-color').value;
       const insurance = document.getElementById('reg-policy').value;
       const fileInput = document.getElementById('reg-file-input');
+      const file = fileInput.files[0];
+
+      const cattleData = {
+        farm_id, tag_number, breed, gender, color, insurance_policy_no: insurance, status: "ACTIVE"
+      };
+
+      // Check Offline Mode
+      if (!navigator.onLine) {
+        await saveOfflineRecord({ cattleData, imageBlob: file, timestamp: new Date().toISOString() });
+        alert(`Offline Mode Active: Cattle #${tag_number} saved to local offline queue. It will automatically upload once internet connects!`);
+        document.getElementById('cattle-reg-form').reset();
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="check" class="w-5 h-5"></i><span>Save Profile & Enroll Biometric Print</span>';
+        lucide.createIcons();
+        return;
+      }
 
       try {
         // 1. Create Cattle Profile
         const cattleRes = await fetch(`${API_BASE}/cattle/`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            farm_id, tag_number, breed, gender, color, insurance_policy_no: insurance, status: "ACTIVE"
-          })
+          body: JSON.stringify(cattleData)
         });
         if (!cattleRes.ok) {
           const err = await cattleRes.json();
@@ -601,7 +746,7 @@
         // 2. Upload Muzzle Biometrics
         const formData = new FormData();
         formData.append('cattle_id', cattle.id);
-        formData.append('file', fileInput.files[0]);
+        formData.append('file', file);
 
         const bioRes = await fetch(`${API_BASE}/biometrics/register-muzzle`, {
           method: 'POST',
@@ -616,12 +761,50 @@
         document.getElementById('cattle-reg-form').reset();
         switchTab('directory');
       } catch (err) {
-        alert("Registration failed: " + err.message);
+        // Network drop during request -> fallback to offline save
+        if (err.message.includes('fetch') || err.message.includes('Network')) {
+          await saveOfflineRecord({ cattleData, imageBlob: file, timestamp: new Date().toISOString() });
+          alert(`Network interruption: Cattle #${tag_number} safely preserved in offline queue!`);
+          document.getElementById('cattle-reg-form').reset();
+        } else {
+          alert("Registration failed: " + err.message);
+        }
       } finally {
         btn.disabled = false;
         btn.innerHTML = '<i data-lucide="check" class="w-5 h-5"></i><span>Save Profile & Enroll Biometric Print</span>';
         lucide.createIcons();
       }
+    }
+
+    // Add Multi-Session Muzzle to existing cattle
+    async function addSessionMuzzle(cattleId, tagNumber) {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('cattle_id', cattleId);
+        formData.append('file', file);
+
+        try {
+          const res = await fetch(`${API_BASE}/biometrics/register-muzzle`, {
+            method: 'POST',
+            body: formData
+          });
+          if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.detail);
+          }
+          alert(`Success! Additional biometric muzzle session enrolled for #${tagNumber}.`);
+          loadCattleRegistry();
+        } catch (err) {
+          alert("Session upload failed: " + err.message);
+        }
+      };
+      input.click();
     }
 
     // Registry Directory
@@ -639,33 +822,42 @@
         }
 
         container.innerHTML = cattleList.map(c => `
-          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3 hover:border-slate-700 transition">
-            <div class="flex justify-between items-start">
-              <div>
-                <span class="text-xs uppercase text-emerald-400 font-semibold tracking-wider">${c.breed}</span>
-                <h4 class="text-lg font-bold text-white">${c.tag_number}</h4>
-              </div>
-              <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                ${c.status}
-              </span>
-            </div>
-
-            <div class="text-xs text-slate-400 space-y-1">
-              <p>Gender: <span class="text-slate-200 font-medium">${c.gender}</span></p>
-              <p>Color: <span class="text-slate-200 font-medium">${c.color || 'Standard'}</span></p>
-              <p>Insurance: <span class="text-slate-200 font-medium">${c.insurance_policy_no || 'None'}</span></p>
-              <p>Biometrics Enrolled: <span class="text-emerald-400 font-bold">${c.biometrics.length} session(s)</span></p>
-            </div>
-
-            ${c.biometrics.length > 0 ? `
-              <div class="pt-2 border-t border-slate-800 flex items-center gap-2">
-                <img src="/${c.biometrics[0].cropped_image_path}" class="w-12 h-12 rounded-lg object-cover border border-slate-700" alt="Muzzle crop" />
-                <div class="text-[11px] text-slate-400">
-                  <p class="font-medium text-slate-300">Biometric ROI Enrolled</p>
-                  <p>Quality Score: ${c.biometrics[0].quality_score.toFixed(1)}</p>
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3 hover:border-slate-700 transition flex flex-col justify-between">
+            <div class="space-y-3">
+              <div class="flex justify-between items-start">
+                <div>
+                  <span class="text-xs uppercase text-emerald-400 font-semibold tracking-wider">${c.breed}</span>
+                  <h4 class="text-lg font-bold text-white">${c.tag_number}</h4>
                 </div>
+                <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  ${c.status}
+                </span>
               </div>
-            ` : ''}
+
+              <div class="text-xs text-slate-400 space-y-1">
+                <p>Gender: <span class="text-slate-200 font-medium">${c.gender}</span></p>
+                <p>Color: <span class="text-slate-200 font-medium">${c.color || 'Standard'}</span></p>
+                <p>Insurance: <span class="text-slate-200 font-medium">${c.insurance_policy_no || 'None'}</span></p>
+                <p>Biometrics Enrolled: <span class="text-emerald-400 font-bold">${c.biometrics.length} session(s)</span></p>
+              </div>
+
+              ${c.biometrics.length > 0 ? `
+                <div class="pt-2 border-t border-slate-800 flex items-center gap-2">
+                  <img src="/${c.biometrics[0].cropped_image_path}" class="w-12 h-12 rounded-lg object-cover border border-slate-700" alt="Muzzle crop" />
+                  <div class="text-[11px] text-slate-400">
+                    <p class="font-medium text-slate-300">Biometric ROI Enrolled</p>
+                    <p>Quality Score: ${c.biometrics[0].quality_score.toFixed(1)}</p>
+                  </div>
+                </div>
+              ` : ''}
+            </div>
+
+            <div class="pt-3 border-t border-slate-800 flex justify-end">
+              <button onclick="addSessionMuzzle('${c.id}', '${c.tag_number}')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold border border-slate-700 flex items-center gap-1.5 transition">
+                <i data-lucide="camera" class="w-3.5 h-3.5 text-emerald-400"></i>
+                <span>+ Add Muzzle Session</span>
+              </button>
+            </div>
           </div>
         `).join('');
       } catch (err) {
@@ -674,8 +866,9 @@
       lucide.createIcons();
     }
 
-    // Initialize Lucide Icons
+    // Initialize Lucide Icons & Offline Status
     lucide.createIcons();
+    updateOfflinePill();
   </script>
 </body>
 </html>
