@@ -373,7 +373,7 @@
               </select>
             </div>
             <div class="sm:col-span-4 flex items-end">
-              <button type="button" onclick="promptCreateFarm()" class="w-full touch-btn h-12 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-emerald-300 border border-slate-700/80 flex items-center justify-center gap-1.5">
+              <button type="button" onclick="openFarmModal()" class="w-full touch-btn h-12 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-emerald-300 border border-slate-700/80 flex items-center justify-center gap-1.5">
                 <i data-lucide="plus" class="w-4 h-4"></i>
                 <span>New Farm</span>
               </button>
@@ -470,6 +470,59 @@
 
   </main>
 
+  <!-- ================= CREATE FARM MODAL ================= -->
+  <div id="farm-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+    <div class="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+            <i data-lucide="warehouse" class="w-4 h-4"></i>
+          </div>
+          <h3 class="text-base font-bold text-white">Create New Farm</h3>
+        </div>
+        <button type="button" onclick="closeFarmModal()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form id="create-farm-form" onsubmit="handleCreateFarmSubmit(event)" class="space-y-3.5">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Farm Name *</label>
+          <input type="text" id="modal-farm-name" required placeholder="e.g. Bismillah Dairy Farm" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500 h-11" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Owner Name *</label>
+          <input type="text" id="modal-owner-name" required placeholder="e.g. Al-Hajj Abdul Karim" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500 h-11" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Phone Number *</label>
+          <input type="tel" id="modal-phone" required placeholder="e.g. 01712345678" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500 h-11 font-mono-num" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">District</label>
+            <input type="text" id="modal-district" value="Sirajganj" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500 h-11" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Upazila</label>
+            <input type="text" id="modal-upazila" value="Shahjadpur" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-emerald-500 h-11" />
+          </div>
+        </div>
+
+        <div class="pt-2 flex items-center gap-2.5">
+          <button type="button" onclick="closeFarmModal()" class="flex-1 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition">
+            Cancel
+          </button>
+          <button type="submit" id="btn-modal-save-farm" class="flex-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition shadow-lg shadow-emerald-600/30">
+            Save Farm
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <!-- ================= MOBILE BOTTOM NAVIGATION DOCK (VISIBLE ON MOBILE ONLY) ================= -->
   <nav class="md:hidden fixed bottom-3 left-3 right-3 z-50 bg-slate-900/90 backdrop-blur-2xl border border-slate-800/90 rounded-2xl p-1.5 shadow-[0_10px_30px_rgba(0,0,0,0.6)] flex justify-around items-center">
@@ -829,41 +882,70 @@
       document.getElementById('reg-file-placeholder').classList.add('hidden');
     }
 
-    async function loadFarmsDropdown() {
+    async function loadFarmsDropdown(selectedId = null) {
       try {
         const res = await fetch(`${API_BASE}/farms/`);
         const farms = await res.json();
         const sel = document.getElementById('reg-farm-id');
         sel.innerHTML = '<option value="">-- Choose Farm --</option>' + farms.map(f => `
-          <option value="${f.id}">${f.name} (${f.owner_name} - ${f.phone})</option>
+          <option value="${f.id}" ${selectedId === f.id ? 'selected' : ''}>${f.name} (${f.owner_name} - ${f.phone})</option>
         `).join('');
       } catch (e) {
         console.error(e);
       }
     }
 
-    async function promptCreateFarm() {
-      const name = prompt("Enter Farm Name:");
-      if (!name) return;
-      const owner = prompt("Owner Name:");
-      const phone = prompt("Phone Number:");
-      if (!owner || !phone) return;
+    function openFarmModal() {
+      const modal = document.getElementById('farm-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      setTimeout(() => {
+        const input = document.getElementById('modal-farm-name');
+        if (input) input.focus();
+      }, 100);
+      lucide.createIcons();
+    }
+
+    function closeFarmModal() {
+      const modal = document.getElementById('farm-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      document.getElementById('create-farm-form').reset();
+    }
+
+    async function handleCreateFarmSubmit(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btn-modal-save-farm');
+      btn.disabled = true;
+      btn.innerText = "Saving...";
+
+      const name = document.getElementById('modal-farm-name').value.trim();
+      const owner_name = document.getElementById('modal-owner-name').value.trim();
+      const phone = document.getElementById('modal-phone').value.trim();
+      const district = document.getElementById('modal-district').value.trim();
+      const upazila = document.getElementById('modal-upazila').value.trim();
 
       try {
         const res = await fetch(`${API_BASE}/farms/`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, owner_name: owner, phone, district: "Sirajganj", upazila: "Shahjadpur" })
+          body: JSON.stringify({ name, owner_name, phone, district, upazila })
         });
-        if (res.ok) {
-          alert("Farm created successfully!");
-          loadFarmsDropdown();
-        } else {
+
+        if (!res.ok) {
           const err = await res.json();
-          alert("Failed: " + err.detail);
+          throw new Error(err.detail || "Failed to create farm");
         }
-      } catch (e) {
-        alert(e.message);
+
+        const newFarm = await res.json();
+        await loadFarmsDropdown(newFarm.id);
+        closeFarmModal();
+        alert(`Success! Farm "${newFarm.name}" created and automatically selected.`);
+      } catch (err) {
+        alert("Farm Creation Failed: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Save Farm";
       }
     }
 
