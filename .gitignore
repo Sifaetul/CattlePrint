@@ -16,6 +16,8 @@ eggs/
 .eggs/
 lib/
 lib64/
+!mobile_app/lib/
+!mobile_app/lib/**
 parts/
 sdist/
 var/
